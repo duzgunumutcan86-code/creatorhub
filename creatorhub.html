@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CreatorHub - İçerik Üretici Ekosistemi</title>
+    <!-- Google Identity Services -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <style>
+        /* GECE MODU: Kuzey Işıkları (Aurora Borealis) Tema Tonları */
+        :root {
+            --bg-color: #080d1a;
+            --panel-bg: #0f172a;
+            --sidebar-bg: #050811;
+            --text-color: #e2e8f0;
+            --text-muted: #818cf8;
+            --border-color: #1e293b;
+            --primary-color: #00f5d4; /* Varsayılan: Aurora Camgöbeği */
+            --accent-color: #7b2cbf;  
+            --shorts-color: #ff007f;  
+            --aurora-green: #39ff14;  
+            --card-glow: rgba(0, 245, 212, 0.15);
+        }
+
+        /* GÜNDÜZ MODU: Gün Doğumu (Sunrise) Tema Tonları */
+        body.light-theme {
+            --bg-color: #fff8f5;
+            --panel-bg: #ffffff;
+            --sidebar-bg: #fff0eb;
+            --text-color: #2d1e2f;
+            --text-muted: #8c6d7a;
+            --border-color: #ffd8cc;
+            --primary-color: #ff5e62; /* Varsayılan: Sıcak Turuncu */
+            --accent-color: #ff9966;  
+            --shorts-color: #d81159;  
+            --aurora-green: #e65100;
+            --card-glow: rgba(255, 94, 98, 0.15);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            scroll-behavior: smooth;
+        }
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: background-color 0.4s, color 0.4s;
+        }
+        
+        /* Navbar */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--sidebar-bg);
+            border-bottom: 2px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(10px);
+        }
+        .logo {
+            font-size: 1.6rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary-color), var(--shorts-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-decoration: none;
+        }
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .theme-toggle-btn {
+            background: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .theme-toggle-btn:hover {
+            box-shadow: 0 0 12px var(--primary-color);
+        }
+        .status-badge {
+            background: rgba(255, 94, 98, 0.1);
+            color: var(--primary-color);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+        }
+        .online-badge {
+            background: rgba(0, 245, 212, 0.1);
+            color: var(--aurora-green);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border-color);
+        }
+        .btn-login {
+            background-color: transparent;
+            border: 1px solid var(--primary-color);
+            color: var(--primary-color);
+            padding: 6px 16px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .btn-login:hover {
+            background-color: var(--primary-color);
+            color: #0b1117;
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        /* Layout */
+        .main-container {
+            display: flex;
+            flex: 1;
+        }
+
+        /* Sol Sidebar */
+        .sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            border-right: 1px solid var(--border-color);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: sticky;
+            top: 60px;
+            height: calc(100vh - 60px);
+            overflow-y: auto;
+        }
+        .panel-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 20px var(--card-glow);
+        }
+        .panel-title {
+            font-size: 0.9rem;
+            color: var(--primary-color);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: bold;
+        }
+        .profile-bio {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 8px 0;
+            text-align: center;
+            font-style: italic;
+        }
+        .badges-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+        .badge-chip {
+            background: rgba(123, 44, 191, 0.2);
+            color: var(--primary-color);
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .accounts-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .account-item {
+            color: var(--text-color);
+            font-size: 0.8rem;
+            background: var(--bg-color);
+            padding: 8px 12px;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .account-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .account-item span {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-bottom: 8px;
+            color: var(--text-muted);
+        }
+        .stat-value {
+            color: var(--text-color);
+            font-weight: bold;
+        }
+
+        /* İçerik Alanı */
+        .content {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .hero-section {
+            text-align: center;
+            padding: 10px 0;
+        }
+        .hero-title {
+            font-size: 2.2rem;
+            max-width: 800px;
+            margin: 0 auto 10px auto;
+        }
+        .hero-title span {
+            background: linear-gradient(135deg, var(--primary-color), var(--shorts-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Arama & Filtre Paneli */
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--panel-bg);
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+        }
+        .search-group {
+            flex: 1;
+            display: flex;
+            gap: 8px;
+            min-width: 250px;
+        }
+        .search-input {
+            flex: 1;
+            padding: 10px 14px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            outline: none;
+        }
+        .btn-search-action {
+            background: var(--primary-color);
+            color: #050811;
+            border: none;
+            padding: 0 16px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .category-buttons {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+        .cat-btn {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        .cat-btn.active {
+            background: var(--primary-color);
+            color: #050811;
+            border-color: var(--primary-color);
+        }
+
+        /* KANAL ARAMA SONUÇLARI KUTUSU */
+        .channel-search-results-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 15px 20px;
+            display: none;
+        }
+        .channel-result-grid {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .channel-result-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            min-width: 240px;
+            justify-content: space-between;
+        }
+
+        /* YAN YANA İKİLİ DÜZEN */
+        .video-section-split {
+            display: flex;
+            gap: 25px;
+            align-items: flex-start;
+        }
+
+        .video-list-box {
+            flex: 2;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .video-upload-box {
+            flex: 1;
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 12px;
+            padding: 25px;
+            position: sticky;
+            top: 80px;
+            box-shadow: 0 0 25px var(--card-glow);
+        }
+
+        .section-header {
+            font-size: 1.3rem;
+            color: var(--primary-color);
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* SHORTS BÖLÜMÜ STİLLERİ */
+        .shorts-section-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--shorts-color);
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(255, 0, 127, 0.15);
+        }
+        .shorts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+            gap: 15px;
+        }
+        .shorts-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .shorts-card:hover {
+            border-color: var(--shorts-color);
+            transform: translateY(-3px);
+        }
+        .shorts-thumbnail {
+            width: 100%;
+            height: 200px;
+            background: var(--panel-bg);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            position: relative;
+            cursor: pointer;
+            border: 1px dashed var(--border-color);
+        }
+
+        /* Video Grid & Kartları */
+        .standard-videos-box {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+        }
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+            gap: 15px;
+        }
+        .video-card {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            overflow: hidden;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            transition: transform 0.2s, border-color 0.2s;
+        }
+        .video-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        .video-icon-placeholder {
+            width: 100%;
+            height: 120px;
+            background: var(--panel-bg);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            border: 1px dashed var(--border-color);
+            position: relative;
+            cursor: pointer;
+        }
+        .play-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: var(--primary-color);
+            color: #050811;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+        .views-badge {
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            background: rgba(0,0,0,0.7);
+            color: #fff;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+        }
+        .shorts-badge {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: var(--shorts-color);
+            color: #fff;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 0.65rem;
+            font-weight: bold;
+        }
+        .video-title {
+            color: var(--text-color);
+            font-size: 0.9rem;
+            font-weight: bold;
+            word-break: break-word;
+        }
+        .video-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .video-category-tag {
+            background: rgba(0, 245, 212, 0.1);
+            color: var(--primary-color);
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Yükleyen Kişi Bilgi ve Profil Alanı */
+        .uploader-info-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .uploader-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 1px solid var(--primary-color);
+        }
+        .uploader-name {
+            font-size: 0.75rem;
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+
+        /* Kanallara Özel Abone Ol Alanı */
+        .channel-sub-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--panel-bg);
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            border: 1px solid var(--border-color);
+            margin-top: 4px;
+        }
+        .btn-mini-sub {
+            background: #ff0000;
+            color: #fff;
+            border: none;
+            padding: 3px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.7rem;
+        }
+        .btn-mini-sub.subscribed {
+            background: var(--border-color);
+            color: var(--text-muted);
+        }
+        .my-channel-tag {
+            font-size: 0.7rem;
+            color: var(--primary-color);
+            font-weight: bold;
+            background: rgba(0, 245, 212, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            border: 1px solid var(--border-color);
+        }
+
+        /* Etkileşim Butonları & Puanlama */
+        .interaction-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 4px;
+            padding-top: 8px;
+            border-top: 1px solid var(--border-color);
+        }
+        .like-btn {
+            background: transparent;
+            border: 1px solid var(--border-color);
+            color: #475569;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.2s;
+        }
+        .like-btn.liked {
+            color: #ff0055;
+            border-color: #ff0055;
+            background: rgba(255, 0, 85, 0.1);
+        }
+        .star-rating {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            cursor: pointer;
+        }
+        .stars-row {
+            display: flex;
+            gap: 2px;
+        }
+        .star-rating span {
+            font-size: 1rem;
+            color: #475569;
+            transition: color 0.2s;
+        }
+        .star-rating span.active {
+            color: #f1c40f;
+        }
+        .my-rating-text {
+            font-size: 0.6rem;
+            color: var(--text-muted);
+        }
+
+        .action-row {
+            display: flex;
+            gap: 6px;
+            margin-top: 4px;
+        }
+        .btn-comment {
+            flex: 1;
+            background: var(--panel-bg);
+            color: var(--primary-color);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .btn-delete {
+            background: rgba(255, 0, 127, 0.1);
+            color: var(--shorts-color);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        /* Yorum Alanı Profil Stilleri */
+        .comments-section {
+            max-height: 350px;
+            overflow-y: auto;
+            margin-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .comment-item {
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+        }
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .comment-user-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .comment-avatar {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            border: 1px solid var(--primary-color);
+            object-fit: cover;
+        }
+        .comment-author-name {
+            color: var(--primary-color);
+            font-weight: bold;
+        }
+        .comment-text {
+            color: var(--text-color);
+            margin-left: 36px;
+        }
+        .comment-actions {
+            display: flex;
+            gap: 12px;
+            margin-left: 36px;
+            margin-top: 4px;
+        }
+        .comment-action-btn {
+            background: none;
+            border: none;
+            color: var(--primary-color);
+            font-size: 0.7rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .comment-action-btn.delete {
+            color: var(--shorts-color);
+        }
+
+        /* Form Stilleri */
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+        }
+        .form-input, .form-textarea, .form-select {
+            width: 100%;
+            padding: 10px;
+            background: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary-color);
+        }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            color: var(--text-color);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--shorts-color));
+            color: #050811;
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: opacity 0.2s, box-shadow 0.2s;
+        }
+        .btn-primary:hover {
+            opacity: 0.9;
+            box-shadow: 0 0 15px var(--card-glow);
+        }
+        .btn-sm {
+            padding: 4px 10px;
+            font-size: 0.75rem;
+        }
+
+        /* Modallar */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(5, 8, 17, 0.9);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-color);
+            border-radius: 12px;
+            width: 90%;
+            max-width: 650px;
+            padding: 20px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 10px; right: 15px;
+            color: var(--text-color); font-size: 1.5rem; cursor: pointer;
+        }
+        .video-player-container {
+            width: 100%;
+            margin-top: 15px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .video-player-container video {
+            width: 100%;
+            max-height: 400px;
+            display: block;
+        }
+
+        /* Toast Bildirim */
+        #toast {
+            position: fixed;
+            bottom: 20px; right: 20px;
+            background: var(--panel-bg);
+            border: 1px solid var(--primary-color);
+            color: var(--text-color);
+            padding: 10px 18px;
+            border-radius: 8px;
+            display: none;
+            z-index: 1000;
+            box-shadow: 0 0 15px var(--card-glow);
+        }
+
+        @media (max-width: 1024px) {
+            .video-section-split {
+                flex-direction: column;
+            }
+            .video-upload-box {
+                width: 100%;
+                position: static;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toast"></div>
+
+    <!-- Profil Düzenleme Modalı -->
+    <div id="profile-modal" class="modal-overlay" onclick="closeProfileModal(event)">
+        <div class="modal-content" style="max-width: 450px;" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="closeProfileModalDirect()">&times;</span>
+            <h3 style="color:var(--primary-color); margin-bottom:15px;">Kanal Tanıtımını & Profilini Düzenle</h3>
+            
+            <div class="form-group">
+                <label>Kısa Biyografi / Unvan</label>
+                <input type="text" id="edit-bio" class="form-input" placeholder="Örn: Oyun & Yazılım İçerik Üreticisi">
+            </div>
+            <div class="form-group">
+                <label>🎨 Kanal Vurgu Rengi</label>
+                <select id="edit-color" class="form-select">
+                    <option value="#00f5d4">Aurora Camgöbeği (Varsayılan)</option>
+                    <option value="#39ff14">Kuzey Işığı Yeşili</option>
+                    <option value="#ff9900">Şafak Turuncusu</option>
+                    <option value="#9b51e0">Neon Mor</option>
+                    <option value="#ff007f">Aurora Pembe</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>🔴 YouTube Kanal Linki Veya Kullanıcı Adı</label>
+                <input type="text" id="edit-yt" class="form-input" placeholder="https://www.youtube.com/@robloxtuber12648">
+            </div>
+            <div class="form-group">
+                <label>💜 Twitch Kanal Adı / Linki</label>
+                <input type="text" id="edit-twitch" class="form-input" placeholder="Örn: MehmetCanLive">
+            </div>
+            <div class="form-group">
+                <label>💬 Discord Kullanıcı Adı / Sunucu Linki</label>
+                <input type="text" id="edit-discord" class="form-input" placeholder="Örn: MehmetCan#0001">
+            </div>
+            <button class="btn-primary" style="width:100%; margin-top:10px;" onclick="saveProfile()">Kaydet 💾</button>
+        </div>
+    </div>
+
+    <!-- Video Oynatıcı & Yorum Modalı -->
+    <div id="video-player-modal" class="modal-overlay" onclick="closePlayerModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <span class="modal-close" onclick="closePlayerModalDirect()">&times;</span>
+            <h3 id="player-video-title" style="color:var(--primary-color);"></h3>
+            <div id="player-video-author" style="font-size:0.8rem; color:var(--text-muted); margin-top:4px;"></div>
+            
+            <div class="video-player-container">
+                <video id="active-video-player" controls autoplay></video>
+            </div>
+
+            <!-- Yorumlar Bölümü -->
+            <div style="margin-top: 20px; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                <h4 style="color:var(--primary-color); margin-bottom: 10px;">💬 Yorumlar & Tartışma</h4>
+                
+                <div class="form-group" style="display: flex; gap: 8px;">
+                    <input type="text" id="new-comment-input" class="form-input" placeholder="Yorumunuzu yazın...">
+                    <button class="btn-primary" style="white-space: nowrap;" onclick="submitComment()">Yorum Yap</button>
+                </div>
+
+                <div id="comments-list-container" class="comments-section"></div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="navbar">
+        <a href="#" class="logo">CreatorHub.</a>
+        <div class="nav-right">
+            <button class="theme-toggle-btn" onclick="toggleTheme()" id="theme-btn">🌌 Kuzey Işıkları (Gece)</button>
+            <span class="online-badge" id="online-count-badge">🟢 Çevrimiçi: 1 Kişi</span>
+            <span class="status-badge" id="video-count-badge">● Gösterilen: 0 Video</span>
+            <button id="auth-btn" class="btn-login" onclick="handleAuthClick()">Giriş Yap</button>
+        </div>
+    </nav>
+
+    <div class="main-container">
+        <!-- SOL SIDEBAR: ÜRETİCİ PROFİLİ & SOSYAL LİNKLER -->
+        <aside class="sidebar">
+            <div class="panel-box">
+                <div class="panel-title">
+                    <span>🎬 Üretici Profili</span>
+                    <button class="btn-primary btn-sm" onclick="openProfileModal()">Düzenle ✏️</button>
+                </div>
+                <div style="text-align: center; margin-bottom: 10px;">
+                    <img id="user-avatar" src="https://via.placeholder.com/60" style="border-radius: 50%; width: 60px; height: 60px; border: 2px solid var(--primary-color); display: none; margin: 0 auto;">
+                    <div id="user-name" style="font-size: 0.95rem; font-weight: bold; margin-top: 8px;">Giriş Yapılmadı</div>
+                    <div class="profile-bio" id="user-bio">Henüz biyografi eklenmedi.</div>
+                </div>
+
+                <div class="badges-container">
+                    <span class="badge-chip">🚀 Üretici Paneli</span>
+                    <span class="badge-chip">💎 Topluluk Üyesi</span>
+                </div>
+
+                <div class="accounts-list">
+                    <div class="account-item">
+                        <span>🔴 YouTube:</span>
+                        <div id="acc-yt-box"><strong>Eklenmedi</strong></div>
+                    </div>
+                    <div class="account-item">
+                        <span>💜 Twitch:</span>
+                        <div id="acc-twitch-box"><strong>Eklenmedi</strong></div>
+                    </div>
+                    <div class="account-item">
+                        <span>💬 Discord:</span>
+                        <div id="acc-discord-box"><strong>Eklenmedi</strong></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-box">
+                <div class="panel-title">📊 Topluluk İstatistikleri</div>
+                <div class="stat-row">
+                    <span>Eklenen Toplam Video:</span>
+                    <span class="stat-value" id="stat-total-vids">0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Toplam Beğeni:</span>
+                    <span class="stat-value" id="stat-total-likes">❤️ 0</span>
+                </div>
+                <div class="stat-row">
+                    <span>Ortalama Puan:</span>
+                    <span class="stat-value" id="stat-avg-rating">⭐ 0.0</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- İÇERİK ALANI -->
+        <main class="content">
+            <section class="hero-section">
+                <h1 class="hero-title">İçerik Üreticileri İçin <span>Günün Videoları</span></h1>
+                <p style="color:var(--text-muted);">Diğer kanalları arat, keşfet, başka içerik üreticilerine abone ol ve videolarını izle.</p>
+            </section>
+
+            <!-- ARAMA VE KATEGORİ FİLTRESİ -->
+            <div class="filter-bar">
+                <div class="search-group">
+                    <input type="text" id="search-input" class="search-input" placeholder="🔍 Kanal veya video ara..." oninput="filterVideos()">
+                    <button class="btn-search-action" onclick="filterVideos()">🔍 Ara</button>
+                </div>
+                <div class="category-buttons">
+                    <button class="cat-btn active" onclick="setCategory('Tümü', this)">Tümü</button>
+                    <button class="cat-btn" onclick="setCategory('Oyun', this)">🎮 Oyun</button>
+                    <button class="cat-btn" onclick="setCategory('Yazılım', this)">💻 Yazılım</button>
+                    <button class="cat-btn" onclick="setCategory('Diğer', this)">📁 Diğer</button>
+                </div>
+            </div>
+
+            <!-- KANAL ARAMA SONUÇLARI ALANI -->
+            <div id="channel-search-box" class="channel-search-results-box">
+                <h3 style="font-size: 0.95rem; color: var(--primary-color);">🔍 Bulunan Kanallar</h3>
+                <div id="channel-result-grid" class="channel-result-grid"></div>
+            </div>
+
+            <div class="video-section-split">
+                <section class="video-list-box">
+                    
+                    <!-- ⚡ ÖZEL SHORTS VİTRİN ALANI -->
+                    <div class="shorts-section-box">
+                        <h2 class="section-header" style="color:var(--shorts-color); border-color:var(--shorts-color);">
+                            ⚡ Kısa Videolar (Shorts)
+                        </h2>
+                        <div id="shorts-grid" class="shorts-grid"></div>
+                    </div>
+
+                    <!-- 🎬 NORMAL VİDEOLAR ALANI -->
+                    <div class="standard-videos-box">
+                        <h2 class="section-header">🔥 Günün Videoları</h2>
+                        <div id="video-grid" class="video-grid"></div>
+                    </div>
+
+                </section>
+
+                <!-- YÜKLEME PANELSİ -->
+                <section class="video-upload-box">
+                    <h2 class="section-header">🚀 Video Gönder</h2>
+                    <div class="form-group">
+                        <label>Video Başlığı</label>
+                        <input type="text" id="v-title" class="form-input" placeholder="Örn: Yeni Oyun / Tasarım İncelemesi">
+                    </div>
+                    <div class="form-group">
+                        <label>Kategori Seçin</label>
+                        <select id="v-category" class="form-select">
+                            <option value="Oyun">🎮 Oyun</option>
+                            <option value="Yazılım">💻 Yazılım</option>
+                            <option value="Diğer">📁 Diğer</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="v-is-shorts">
+                            ⚡ Shorts Olarak Paylaş (Max 3 dk)
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <label>Cihazdan Video Dosyası Seç (.mp4, vb.)</label>
+                        <button class="btn-primary" type="button" style="width: 100%;" onclick="document.getElementById('file-input').click()">📁 Video Dosyası Seç</button>
+                        <input type="file" id="file-input" accept="video/*" style="display: none;" onchange="handleFileSelect(event)">
+                        <div id="selected-file-label" style="font-size:0.75rem; color:var(--primary-color); margin-top:6px; display:none;"></div>
+                    </div>
+                    <button class="btn-primary" style="width:100%; margin-top: 10px;" onclick="addVideo()">Vitrinde Yayınla 🎬</button>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const CREATORHUB_CLIENT_ID = "204189338795-6uod0mkigdfmic4m19107kmnlv1fmvo5.apps.googleusercontent.com";
+        let currentUser = null;
+        let currentSelectedFile = null;
+        let db = null;
+        let tokenClient = null;
+        let activeVideoIdForComments = null;
+        let activeCategory = "Tümü";
+
+        const tabSessionId = 'tab_' + Math.random().toString(36).substr(2, 9);
+
+        function updateOnlinePresence() {
+            let activeTabs = JSON.parse(localStorage.getItem('ch_active_tabs') || '{}');
+            const now = Date.now();
+            activeTabs[tabSessionId] = now;
+
+            Object.keys(activeTabs).forEach(id => {
+                if (now - activeTabs[id] > 10000) {
+                    delete activeTabs[id];
+                }
+            });
+
+            localStorage.setItem('ch_active_tabs', JSON.stringify(activeTabs));
+            const onlineCount = Object.keys(activeTabs).length || 1;
+            document.getElementById('online-count-badge').textContent = `🟢 Çevrimiçi: ${onlineCount} Kişi`;
+        }
+
+        window.addEventListener('beforeunload', () => {
+            let activeTabs = JSON.parse(localStorage.getItem('ch_active_tabs') || '{}');
+            delete activeTabs[tabSessionId];
+            localStorage.setItem('ch_active_tabs', JSON.stringify(activeTabs));
+        });
+
+        /* IndexedDB Veritabanı */
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                if (db) { resolve(db); return; }
+                const request = indexedDB.open("CreatorHubPersistentDB", 1);
+                request.onerror = () => reject(request.error);
+                request.onsuccess = () => { db = request.result; resolve(db); };
+                request.onupgradeneeded = (event) => {
+                    const database = event.target.result;
+                    if (!database.objectStoreNames.contains("videos")) {
+                        database.createObjectStore("videos", { keyPath: "id" });
+                    }
+                };
+            });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            localStorage.setItem('ch_theme', isLight ? 'light' : 'dark');
+            
+            const btn = document.getElementById('theme-btn');
+            btn.textContent = isLight ? '🌅 Gün Doğumu (Gündüz)' : '🌌 Kuzey Işıkları (Gece)';
+        }
+
+        function applyUserProfileTheme() {
+            if (!currentUser) return;
+            const userKey = currentUser.name;
+            const customColor = localStorage.getItem(`ch_user_color_${userKey}`);
+            if (customColor) {
+                document.documentElement.style.setProperty('--primary-color', customColor);
+                document.documentElement.style.setProperty('--card-glow', customColor + '26'); // hafif saydam versiyon
+            }
+        }
+
+        function formatYouTubeHandle(input) {
+            if (!input) return "";
+            let cleaned = input.trim();
+            return cleaned.includes('youtube.com/') ? cleaned.split('youtube.com/')[1].replace('@', '') : cleaned.replace('@', '');
+        }
+
+        function toggleChannelSubscribe(channelName, event) {
+            if (event) event.stopPropagation();
+            if (!currentUser) {
+                showToast("Kanallara abone olmak için giriş yapmalısın! 🔒");
+                return;
+            }
+
+            if (currentUser.name === channelName) {
+                showToast("Kendi kanalına abone olamazsın!");
+                return;
+            }
+
+            let channelSubs = JSON.parse(localStorage.getItem('ch_channel_subscriptions')) || {};
+            if (!channelSubs[channelName]) channelSubs[channelName] = [];
+
+            const userIndex = channelSubs[channelName].indexOf(currentUser.name);
+            if (userIndex > -1) {
+                channelSubs[channelName].splice(userIndex, 1);
+                showToast(`@${channelName} aboneliğinden çıkıldı.`);
+            } else {
+                channelSubs[channelName].push(currentUser.name);
+                showToast(`🎉 @${channelName} kanalına abone oldun!`);
+            }
+
+            localStorage.setItem('ch_channel_subscriptions', JSON.stringify(channelSubs));
+            renderVideos();
+        }
+
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                currentSelectedFile = file;
+                document.getElementById('v-title').value = file.name.replace(/\.[^/.]+$/, "");
+                const label = document.getElementById('selected-file-label');
+                label.textContent = "Seçilen Dosya: " + file.name;
+                label.style.display = "block";
+                showToast("Video dosyası seçildi: " + file.name);
+            }
+        }
+
+        function loadProfileData() {
+            const userKey = currentUser ? currentUser.name : 'guest';
+            const bio = localStorage.getItem(`ch_user_bio_${userKey}`) || "İçerik üreticisi ve geliştirici.";
+            const yt = localStorage.getItem(`ch_acc_yt_${userKey}`) || "";
+            const twitch = localStorage.getItem(`ch_acc_twitch_${userKey}`) || "Eklenmedi";
+            const discord = localStorage.getItem(`ch_acc_discord_${userKey}`) || "Eklenmedi";
+
+            document.getElementById('user-bio').textContent = bio;
+            applyUserProfileTheme();
+            
+            const ytBox = document.getElementById('acc-yt-box');
+            if (yt) {
+                const handle = formatYouTubeHandle(yt);
+                ytBox.innerHTML = `<a href="https://www.youtube.com/@${handle}" target="_blank">@${handle}</a>`;
+            } else {
+                ytBox.innerHTML = `<strong>Eklenmedi</strong>`;
+            }
+
+            const twitchBox = document.getElementById('acc-twitch-box');
+            if (twitch && twitch !== "Eklenmedi") {
+                twitchBox.innerHTML = `<a href="https://twitch.tv/${twitch}" target="_blank">${twitch}</a>`;
+            } else {
+                twitchBox.innerHTML = `<strong>Eklenmedi</strong>`;
+            }
+
+            const discordBox = document.getElementById('acc-discord-box');
+            if (discord && discord !== "Eklenmedi") {
+                discordBox.innerHTML = `<strong>${discord}</strong>`;
+            } else {
+                discordBox.innerHTML = `<strong>Eklenmedi</strong>`;
+            }
+
+            const allVideos = JSON.parse(localStorage.getItem('ch_persistent_videos')) || [];
+            document.getElementById('stat-total-vids').textContent = allVideos.length;
+
+            let totalLikesCount = 0;
+            let totalRatingSum = 0;
+            let ratingCount = 0;
+
+            const likesData = JSON.parse(localStorage.getItem('ch_video_likes')) || {};
+            const ratingsData = JSON.parse(localStorage.getItem('ch_video_ratings')) || {};
+
+            allVideos.forEach(v => {
+                if (likesData[v.id]) totalLikesCount += likesData[v.id].length;
+                if (ratingsData[v.id]) {
+                    Object.values(ratingsData[v.id]).forEach(score => {
+                        totalRatingSum += score;
+                        ratingCount++;
+                    });
+                }
+            });
+
+            document.getElementById('stat-total-likes').textContent = `❤️ ${totalLikesCount}`;
+            const avgRating = ratingCount > 0 ? (totalRatingSum / ratingCount).toFixed(1) : "0.0";
+            document.getElementById('stat-avg-rating').textContent = `⭐ ${avgRating}`;
+        }
+
+        function openProfileModal() {
+            if (!currentUser) { showToast("Profil düzenlemek için önce giriş yapmalısın!"); return; }
+            const userKey = currentUser.name;
+            document.getElementById('edit-bio').value = localStorage.getItem(`ch_user_bio_${userKey}`) || "";
+            document.getElementById('edit-yt').value = localStorage.getItem(`ch_acc_yt_${userKey}`) || "";
+            document.getElementById('edit-twitch').value = localStorage.getItem(`ch_acc_twitch_${userKey}`) || "";
+            document.getElementById('edit-discord').value = localStorage.getItem(`ch_acc_discord_${userKey}`) || "";
+            document.getElementById('edit-color').value = localStorage.getItem(`ch_user_color_${userKey}`) || "#00f5d4";
+            document.getElementById('profile-modal').style.display = 'flex';
+        }
+
+        function saveProfile() {
+            if (!currentUser) return;
+            const userKey = currentUser.name;
+            localStorage.setItem(`ch_user_bio_${userKey}`, document.getElementById('edit-bio').value);
+            localStorage.setItem(`ch_acc_yt_${userKey}`, document.getElementById('edit-yt').value);
+            localStorage.setItem(`ch_acc_twitch_${userKey}`, document.getElementById('edit-twitch').value);
+            localStorage.setItem(`ch_acc_discord_${userKey}`, document.getElementById('edit-discord').value);
+            localStorage.setItem(`ch_user_color_${userKey}`, document.getElementById('edit-color').value);
+
+            loadProfileData();
+            closeProfileModalDirect();
+            showToast("Profil ve kanal teması güncellendi! 💾");
+        }
+
+        function closeProfileModal(e) { if (e.target.id === 'profile-modal') closeProfileModalDirect(); }
+        function closeProfileModalDirect() { document.getElementById('profile-modal').style.display = 'none'; }
+
+        function closePlayerModalDirect() {
+            const player = document.getElementById('active-video-player');
+            player.pause();
+            player.src = "";
+            document.getElementById('video-player-modal').style.display = 'none';
+            activeVideoIdForComments = null;
+        }
+
+        async function openVideoPlayer(id) {
+            activeVideoIdForComments = id;
+
+            if (currentUser) {
+                let videoViewers = JSON.parse(localStorage.getItem('ch_video_viewers')) || {};
+                if (!videoViewers[id]) videoViewers[id] = [];
+
+                if (!videoViewers[id].includes(currentUser.name)) {
+                    videoViewers[id].push(currentUser.name);
+                    localStorage.setItem('ch_video_viewers', JSON.stringify(videoViewers));
+
+                    let viewsData = JSON.parse(localStorage.getItem('ch_video_views')) || {};
+                    viewsData[id] = (viewsData[id] || 0) + 1;
+                    localStorage.setItem('ch_video_views', JSON.stringify(viewsData));
+                    
+                    renderVideos();
+                }
+            }
+
+            const database = await initDB();
+            const transaction = database.transaction(["videos"], "readonly");
+            const store = transaction.objectStore("videos");
+            const request = store.get(id);
+
+            request.onsuccess = () => {
+                const item = request.result;
+                if (item && item.blob) {
+                    document.getElementById('player-video-title').textContent = item.title;
+                    document.getElementById('player-video-author').textContent = "Gönderen: " + item.author;
+
+                    const player = document.getElementById('active-video-player');
+                    player.src = URL.createObjectURL(item.blob);
+                    
+                    renderComments();
+                    document.getElementById('video-player-modal').style.display = 'flex';
+                } else {
+                    showToast("Video dosyası veritabanında bulunamadı.");
+                }
+            };
+        }
+
+        function closePlayerModal(e) { if (e.target.id === 'video-player-modal') closePlayerModalDirect(); }
+
+        /* FİLTRE VE ARAMA MANTIĞI */
+        function setCategory(cat, btn) {
+            activeCategory = cat;
+            document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            renderVideos();
+        }
+
+        function filterVideos() {
+            renderVideos();
+        }
+
+        /* BEĞENİ & PUANLAMA MANTIĞI */
+        function toggleLike(videoId, event) {
+            event.stopPropagation();
+            if (!currentUser) { showToast("Beğenmek için giriş yapmalısın!"); return; }
+
+            let likesData = JSON.parse(localStorage.getItem('ch_video_likes')) || {};
+            if (!likesData[videoId]) likesData[videoId] = [];
+
+            const userIndex = likesData[videoId].indexOf(currentUser.name);
+            if (userIndex > -1) {
+                likesData[videoId].splice(userIndex, 1);
+                showToast("Beğeni kaldırıldı.");
+            } else {
+                likesData[videoId].push(currentUser.name);
+                showToast("❤️ Beğenildi!");
+            }
+
+            localStorage.setItem('ch_video_likes', JSON.stringify(likesData));
+            loadProfileData();
+            renderVideos();
+        }
+
+        function rateVideo(videoId, score, event) {
+            event.stopPropagation();
+            if (!currentUser) { showToast("Puan vermek için giriş yapmalısın!"); return; }
+
+            let ratingsData = JSON.parse(localStorage.getItem('ch_video_ratings')) || {};
+            if (!ratingsData[videoId]) ratingsData[videoId] = {};
+
+            ratingsData[videoId][currentUser.name] = score;
+            localStorage.setItem('ch_video_ratings', JSON.stringify(ratingsData));
+            
+            showToast(`Videoya ${score} ⭐ verdiniz!`);
+            loadProfileData();
+            renderVideos();
+        }
+
+        /* YORUM MANTIĞI */
+        function renderComments() {
+            const container = document.getElementById('comments-list-container');
+            container.innerHTML = '';
+
+            let commentsData = JSON.parse(localStorage.getItem('ch_video_comments')) || {};
+            const videoComments = commentsData[activeVideoIdForComments] || [];
+
+            if (videoComments.length === 0) {
+                container.innerHTML = '<div style="color:var(--text-muted); font-size:0.8rem; text-align:center;">Henüz yorum yapılmamış. İlk yorumu sen yaz!</div>';
+                return;
+            }
+
+            videoComments.forEach(c => {
+                const cBox = document.createElement('div');
+                cBox.className = 'comment-item';
+                
+                const userAvatar = c.avatar || 'https://via.placeholder.com/28';
+                const isOwner = currentUser && currentUser.name === c.author;
+
+                cBox.innerHTML = `
+                    <div class="comment-header">
+                        <div class="comment-user-info">
+                            <img src="${userAvatar}" class="comment-avatar" alt="Avatar">
+                            <span class="comment-author-name">${c.author}</span>
+                        </div>
+                        <span style="font-size:0.7rem; color:var(--text-muted);">${c.time}</span>
+                    </div>
+                    <div class="comment-text">${c.text}</div>
+                    <div class="comment-actions">
+                        ${isOwner ? `<button class="comment-action-btn delete" onclick="deleteComment('${c.id}')">🗑️ Sil</button>` : ''}
+                    </div>
+                `;
+                container.appendChild(cBox);
+            });
+        }
+
+        function submitComment() {
+            if (!currentUser) { showToast("Yorum yapmak için giriş yapmalısın!"); return; }
+            const input = document.getElementById('new-comment-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            let commentsData = JSON.parse(localStorage.getItem('ch_video_comments')) || {};
+            if (!commentsData[activeVideoIdForComments]) commentsData[activeVideoIdForComments] = [];
+
+            commentsData[activeVideoIdForComments].push({
+                id: 'c_' + Date.now(),
+                author: currentUser.name,
+                avatar: currentUser.avatar,
+                text: text,
+                time: new Date().toLocaleTimeString()
+            });
+
+            localStorage.setItem('ch_video_comments', JSON.stringify(commentsData));
+            input.value = '';
+            renderComments();
+            showToast("Yorumunuz eklendi! 💬");
+        }
+
+        function deleteComment(commentId) {
+            let commentsData = JSON.parse(localStorage.getItem('ch_video_comments')) || {};
+            commentsData[activeVideoIdForComments] = (commentsData[activeVideoIdForComments] || []).filter(c => c.id !== commentId);
+            localStorage.setItem('ch_video_comments', JSON.stringify(commentsData));
+            renderComments();
+            showToast("Yorum silindi. 🗑️");
+        }
+
+        function deleteVideo(event, id) {
+            event.stopPropagation();
+            initDB().then(database => {
+                const transaction = database.transaction(["videos"], "readwrite");
+                transaction.objectStore("videos").delete(id);
+            });
+
+            let videos = JSON.parse(localStorage.getItem('ch_persistent_videos')) || [];
+            videos = videos.filter(v => v.id !== id);
+            localStorage.setItem('ch_persistent_videos', JSON.stringify(videos));
+
+            loadProfileData();
+            renderVideos();
+            showToast("Video silindi. 🗑️");
+        }
+
+        /* VİDEOLARI VE KANALLARI RENDER ETME (ARAMA DESTEKLİ) */
+        function renderVideos() {
+            const grid = document.getElementById('video-grid');
+            const shortsGrid = document.getElementById('shorts-grid');
+            const channelSearchBox = document.getElementById('channel-search-box');
+            const channelResultGrid = document.getElementById('channel-result-grid');
+
+            grid.innerHTML = '';
+            shortsGrid.innerHTML = '';
+            channelResultGrid.innerHTML = '';
+            
+            if (!currentUser) {
+                document.getElementById('video-count-badge').textContent = `● Gösterilen: 0 Video`;
+                const emptyMsg = `
+                    <div style="grid-column: 1/-1; text-align: center; padding: 30px; color: var(--text-muted); border: 2px dashed var(--border-color); border-radius: 8px;">
+                        İçerikleri görmek için lütfen Giriş Yapın.
+                    </div>
+                `;
+                grid.innerHTML = emptyMsg;
+                shortsGrid.innerHTML = emptyMsg;
+                channelSearchBox.style.display = 'none';
+                return;
+            }
+
+            const allVideos = JSON.parse(localStorage.getItem('ch_persistent_videos')) || [];
+            const searchKeyword = document.getElementById('search-input').value.toLowerCase().trim();
+
+            const channelSubs = JSON.parse(localStorage.getItem('ch_channel_subscriptions')) || {};
+
+            // KANAL SONUÇLARI FİLTRELEME
+            if (searchKeyword.length > 0) {
+                const uniqueAuthors = [...new Set(allVideos.map(v => v.author))].filter(author => author.toLowerCase().includes(searchKeyword));
+                
+                if (uniqueAuthors.length > 0) {
+                    channelSearchBox.style.display = 'block';
+
+                    uniqueAuthors.forEach(author => {
+                        const subsList = channelSubs[author] || [];
+                        const isSubbed = currentUser && subsList.includes(currentUser.name);
+                        const isMyChannel = currentUser && currentUser.name === author;
+
+                        const sampleVid = allVideos.find(v => v.author === author);
+                        const authorAvatar = (sampleVid && sampleVid.authorAvatar) ? sampleVid.authorAvatar : 'https://via.placeholder.com/30';
+
+                        let subBtnHtml = '';
+                        if (isMyChannel) {
+                            subBtnHtml = `<span class="my-channel-tag">Senin Kanalın</span>`;
+                        } else {
+                            subBtnHtml = `
+                                <button class="btn-mini-sub ${isSubbed ? 'subscribed' : ''}" onclick="toggleChannelSubscribe('${author}', event)">
+                                    ${isSubbed ? '✓ Abone Olundu' : '🔴 Abone Ol'}
+                                </button>
+                            `;
+                        }
+
+                        const cCard = document.createElement('div');
+                        cCard.className = 'channel-result-card';
+                        cCard.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <img src="${authorAvatar}" class="uploader-avatar" alt="Avatar">
+                                <div>
+                                    <div style="font-weight:bold; font-size:0.85rem; color:var(--text-color);">${author}</div>
+                                    <div style="font-size:0.7rem; color:var(--text-muted);">${subsList.length} Abone</div>
+                                </div>
+                            </div>
+                            ${subBtnHtml}
+                        `;
+                        channelResultGrid.appendChild(cCard);
+                    });
+                } else {
+                    channelSearchBox.style.display = 'none';
+                }
+            } else {
+                channelSearchBox.style.display = 'none';
+            }
+
+            let filtered = allVideos.filter(v => {
+                const matchSearch = v.title.toLowerCase().includes(searchKeyword) || v.author.toLowerCase().includes(searchKeyword);
+                const matchCat = activeCategory === "Tümü" || (v.category || "Oyun") === activeCategory;
+                return matchSearch && matchCat;
+            });
+
+            document.getElementById('video-count-badge').textContent = `● Gösterilen: ${filtered.length} Video`;
+
+            const likesData = JSON.parse(localStorage.getItem('ch_video_likes')) || {};
+            const ratingsData = JSON.parse(localStorage.getItem('ch_video_ratings')) || {};
+            const viewsData = JSON.parse(localStorage.getItem('ch_video_views')) || {};
+
+            let normalCount = 0;
+            let shortsCount = 0;
+
+            filtered.reverse().forEach((v) => {
+                const likesList = likesData[v.id] || [];
+                const isLiked = likesList.includes(currentUser.name);
+                const videoRatings = ratingsData[v.id] || {};
+                const userRating = videoRatings[currentUser.name] || 0;
+                const viewCount = viewsData[v.id] || 0;
+
+                const authorSubs = channelSubs[v.author] || [];
+                const isSubbedToChannel = authorSubs.includes(currentUser.name);
+                const authorAvatar = v.authorAvatar || 'https://via.placeholder.com/24';
+                const isMyChannel = currentUser && currentUser.name === v.author;
+
+                let starsHtml = '';
+                for (let i = 1; i <= 5; i++) {
+                    starsHtml += `<span class="${i <= userRating ? 'active' : ''}" onclick="rateVideo('${v.id}', ${i}, event)">★</span>`;
+                }
+
+                let subActionHtml = '';
+                if (isMyChannel) {
+                    subActionHtml = `<span class="my-channel-tag">Senin Kanalın</span>`;
+                } else {
+                    subActionHtml = `
+                        <button class="btn-mini-sub ${isSubbedToChannel ? 'subscribed' : ''}" onclick="toggleChannelSubscribe('${v.author}', event)">
+                            ${isSubbedToChannel ? '✓ Abone' : 'Abone Ol'}
+                        </button>
+                    `;
+                }
+
+                if (v.isShorts) {
+                    shortsCount++;
+                    const sCard = document.createElement('div');
+                    sCard.className = 'shorts-card';
+                    sCard.innerHTML = `
+                        <div class="shorts-thumbnail" onclick="openVideoPlayer('${v.id}')">
+                            📱
+                            <div class="views-badge">👁️ ${viewCount}</div>
+                            <div class="shorts-badge">⚡ Shorts</div>
+                        </div>
+                        <div class="video-title" style="font-size:0.8rem;">${v.title}</div>
+                        <div class="uploader-info-bar">
+                            <img src="${authorAvatar}" class="uploader-avatar" alt="Avatar">
+                            <span class="uploader-name">${v.author}</span>
+                        </div>
+                        <div class="channel-sub-bar">
+                            <span style="font-size:0.65rem; color:var(--text-muted);">${authorSubs.length} Abone</span>
+                            ${subActionHtml}
+                        </div>
+                        <div class="interaction-bar">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${v.id}', event)">❤️</button>
+                            <button class="btn-delete" style="padding:2px 6px;" onclick="deleteVideo(event, '${v.id}')">🗑️</button>
+                        </div>
+                    `;
+                    shortsGrid.appendChild(sCard);
+                } else {
+                    normalCount++;
+                    const card = document.createElement('div');
+                    card.className = 'video-card';
+                    card.innerHTML = `
+                        <div class="video-icon-placeholder" onclick="openVideoPlayer('${v.id}')">
+                            🎬
+                            <div class="views-badge">👁️ ${viewCount}</div>
+                            <div class="play-badge">Oynat ▶</div>
+                        </div>
+                        <div class="video-title">${v.title}</div>
+                        <div class="video-meta">
+                            <span class="video-category-tag">${v.category || 'Oyun'}</span>
+                        </div>
+                        <div class="uploader-info-bar">
+                            <img src="${authorAvatar}" class="uploader-avatar" alt="Avatar">
+                            <span class="uploader-name">${v.author}</span>
+                        </div>
+                        <div class="channel-sub-bar">
+                            <span style="font-size:0.7rem; color:var(--text-muted);">Kanal: ${authorSubs.length} Abone</span>
+                            ${subActionHtml}
+                        </div>
+                        <div class="interaction-bar">
+                            <button class="like-btn ${isLiked ? 'liked' : ''}" onclick="toggleLike('${v.id}', event)" title="Beğen">
+                                ❤️
+                            </button>
+                            <div class="star-rating">
+                                <div class="stars-row">${starsHtml}</div>
+                                <span class="my-rating-text">${userRating > 0 ? `Senin Puanın: ${userRating} ⭐` : 'Puan Ver'}</span>
+                            </div>
+                        </div>
+                        <div class="action-row">
+                            <button class="btn-comment" onclick="openVideoPlayer('${v.id}')">💬 Yorumlar</button>
+                            <button class="btn-delete" onclick="deleteVideo(event, '${v.id}')">🗑️ Sil</button>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+
+            if (shortsCount === 0) {
+                shortsGrid.innerHTML = `<div style="grid-column: 1/-1; color: var(--text-muted); font-size:0.8rem;">Eşleşen Shorts bulunamadı.</div>`;
+            }
+            if (normalCount === 0) {
+                grid.innerHTML = `<div style="grid-column: 1/-1; color: var(--text-muted); font-size:0.8rem;">Eşleşen video bulunamadı.</div>`;
+            }
+        }
+
+        function getVideoDuration(file) {
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                video.preload = 'metadata';
+                video.onloadedmetadata = function() {
+                    window.URL.revokeObjectURL(video.src);
+                    resolve(video.duration);
+                };
+                video.onerror = function() { resolve(0); };
+                video.src = URL.createObjectURL(file);
+            });
+        }
+
+        async function addVideo() {
+            if (!currentUser) { showToast("Video göndermek için önce giriş yapmalısın! 🔒"); return; }
+            const title = document.getElementById('v-title').value.trim();
+            const category = document.getElementById('v-category').value;
+            const isShorts = document.getElementById('v-is-shorts').checked;
+
+            if (!title || !currentSelectedFile) { showToast("Lütfen başlık girin ve dosya seçin."); return; }
+
+            if (isShorts) {
+                const duration = await getVideoDuration(currentSelectedFile);
+                if (duration > 180) {
+                    showToast("❌ Shorts videoları en fazla 3 dakika (180 sn) olabilir!");
+                    return;
+                }
+            }
+
+            try {
+                const database = await initDB();
+                const videoId = 'vid_' + Date.now();
+                const videoRecord = {
+                    id: videoId,
+                    title: title,
+                    category: category,
+                    isShorts: isShorts,
+                    author: currentUser.name,
+                    authorAvatar: currentUser.avatar || 'https://via.placeholder.com/24',
+                    fileName: currentSelectedFile.name,
+                    blob: currentSelectedFile,
+                    addedAt: new Date().toLocaleTimeString()
+                };
+
+                const transaction = database.transaction(["videos"], "readwrite");
+                transaction.objectStore("videos").put(videoRecord);
+
+                transaction.oncomplete = () => {
+                    let videos = JSON.parse(localStorage.getItem('ch_persistent_videos')) || [];
+                    videos.push({
+                        id: videoId,
+                        title: title,
+                        category: category,
+                        isShorts: isShorts,
+                        author: currentUser.name,
+                        authorAvatar: currentUser.avatar || 'https://via.placeholder.com/24',
+                        fileName: currentSelectedFile.name,
+                        addedAt: videoRecord.addedAt
+                    });
+                    localStorage.setItem('ch_persistent_videos', JSON.stringify(videos));
+
+                    document.getElementById('v-title').value = '';
+                    document.getElementById('file-input').value = '';
+                    document.getElementById('selected-file-label').style.display = 'none';
+                    document.getElementById('v-is-shorts').checked = false;
+                    currentSelectedFile = null;
+
+                    loadProfileData();
+                    renderVideos();
+                    showToast(isShorts ? "⚡ Shorts video eklendi!" : "Videon vitrine eklendi! 🎬");
+                };
+            } catch (e) {
+                showToast("Veritabanı hatası oluştu.");
+            }
+        }
+
+        window.onload = async function () {
+            if (localStorage.getItem('ch_theme') === 'light') {
+                document.body.classList.add('light-theme');
+                document.getElementById('theme-btn').textContent = '🌅 Gün Doğumu (Gündüz)';
+            }
+
+            try { await initDB(); } catch (e) { console.error("DB hatası:", e); }
+
+            updateOnlinePresence();
+            setInterval(updateOnlinePresence, 3000);
+
+            const savedUser = localStorage.getItem('ch_logged_in_user');
+            if (savedUser) {
+                try {
+                    currentUser = JSON.parse(savedUser);
+                    document.getElementById('user-name').textContent = currentUser.name;
+                    if (currentUser.avatar) {
+                        const img = document.getElementById('user-avatar');
+                        img.src = currentUser.avatar;
+                        img.style.display = "block";
+                    }
+                    document.getElementById('auth-btn').textContent = "Çıkış Yap";
+                } catch (err) {
+                    localStorage.removeItem('ch_logged_in_user');
+                }
+            }
+
+            if (window.google && google.accounts) {
+                tokenClient = google.accounts.oauth2.initTokenClient({
+                    client_id: CREATORHUB_CLIENT_ID,
+                    scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+                    callback: handleTokenResponse,
+                });
+            }
+
+            loadProfileData();
+            renderVideos();
+        };
+
+        function handleAuthClick() {
+            if (currentUser) {
+                logoutUser();
+            } else {
+                if (tokenClient) tokenClient.requestAccessToken();
+                else showToast("Google Kimlik Servisi yüklenemedi.");
+            }
+        }
+
+        function logoutUser() {
+            currentUser = null;
+            localStorage.removeItem('ch_logged_in_user');
+            document.getElementById('auth-btn').textContent = "Giriş Yap";
+            document.getElementById('user-name').textContent = "Giriş Yapılmadı";
+            document.getElementById('user-avatar').style.display = "none";
+            loadProfileData();
+            renderVideos();
+            showToast("Çıkış yapıldı.");
+        }
+
+        async function handleTokenResponse(response) {
+            if (response && response.access_token) {
+                try {
+                    const res = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+                        headers: { 'Authorization': `Bearer ${response.access_token}` }
+                    });
+                    const data = await res.json();
+                    
+                    currentUser = { name: data.name, avatar: data.picture };
+                    localStorage.setItem('ch_logged_in_user', JSON.stringify(currentUser));
+
+                    document.getElementById('user-name').textContent = currentUser.name;
+                    if (currentUser.avatar) {
+                        const img = document.getElementById('user-avatar');
+                        img.src = currentUser.avatar;
+                        img.style.display = "block";
+                    }
+                    
+                    document.getElementById('auth-btn').textContent = "Çıkış Yap";
+                    showToast("CreatorHub'a hoş geldin, " + currentUser.name + "!");
+
+                    loadProfileData();
+                    renderVideos();
+                } catch (e) {
+                    showToast("Google hesabı bilgileri alınamadı.");
+                }
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            toast.textContent = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 3000);
+        }
+    </script>
+</body>
+</html>
